@@ -13,6 +13,8 @@ class ShopifyAppGenerator < Rails::Generators::Base
   def copy_files
     directory 'app'
     directory 'public'
+    directory 'config'
+    directory 'vendor'
   end
   
   def remove_static_index
@@ -36,12 +38,17 @@ class ShopifyAppGenerator < Rails::Generators::Base
     insert_into_file "Gemfile", "\ngem 'less-rails-bootstrap'\n\n", :before => '# Gems used only for assets and not required'
   end
   
+  def add_omniauth_strategy_gem
+    insert into file "Gemfile", "\ngem 'omniauth-shopify', '1.0.0', :path =>\"{#File.expand_path(__FILE__)}/../vendor/gems/\""
+  end
+  
   def add_routes
     unless options[:skip_routes]
       route "root :to                   => 'home#index'"
       route "match 'login/logout'       => 'login#logout',       :as => :logout"
       route "match 'login/finalize'     => 'login#finalize',     :as => :finalize"
-      route "match 'login/authenticate' => 'login#authenticate', :as => :authenticate"
+      route "match 'login/shopify/callback' => 'login#authenticate', :as => :authenticate"
+      route "match 'auth/failure' => 'login#failure'"
       route "match 'login'              => 'login#index',        :as => :login"
       route "match 'design'             => 'home#design'"
       route "match 'welcome'            => 'home#welcome'"
